@@ -12,7 +12,8 @@ let config = {
     context: path.resolve(__dirname, 'src'),
 
     entry: {
-        index: './index.js'
+        index: './index.js',
+        demo: './demo.js'
     },
 
     output: {
