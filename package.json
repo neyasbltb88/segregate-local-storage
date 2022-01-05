@@ -15,6 +15,11 @@
         "clear": "rm -r dist/ && rm stats.json"
     },
     "author": "neyasbltb_88@mail.ru",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/neyasbltb88/segregate-local-storage.git"
+    },
+    "homepage": "https://github.com/neyasbltb88/segregate-local-storage#readme",
     "license": "ISC",
     "devDependencies": {
         "@babel/core": "^7.6.3",
