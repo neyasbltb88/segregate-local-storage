@@ -3,8 +3,11 @@ const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+require('dotenv').config();
 
 const NODE_ENV = process.env.NODE_ENV || 'development';
+const DEV = NODE_ENV === 'development';
+const PORT = process.env.PORT || 3000;
 
 let config = {
     mode: NODE_ENV,
@@ -19,21 +22,21 @@ let config = {
         filename: '[name].js'
     },
 
-    watch: NODE_ENV === 'development',
+    watch: DEV,
     watchOptions: {
         aggregateTimeout: 100
     },
 
     devServer: {
         contentBase: path.join(__dirname, 'dist'),
-        watchContentBase: NODE_ENV === 'development' ? true : false,
-        port: 3000,
+        watchContentBase: DEV,
+        port: PORT,
         open: true,
         // Для полной перезагрузки при изменении в html, нужен режим liveReload
-        liveReload: NODE_ENV === 'development' ? true : false,
+        liveReload: DEV,
         // Для горячей замены модулей, при разработке SPA на фреймворках, нужен режим hot
         // При включении режима hot, перестает работать режим liveReload
-        // hot: NODE_ENV === 'development' ? true : false,
+        // hot: DEV,
         writeToDisk: false,
         disableHostCheck: true,
         headers: {
@@ -44,10 +47,10 @@ let config = {
         overlay: {
             warnings: true,
             errors: true
-        },
+        }
     },
 
-    devtool: NODE_ENV === 'development' ? 'inline-source-map' : false,
+    devtool: DEV ? 'inline-source-map' : false,
     plugins: [
         new CleanWebpackPlugin(),
         new webpack.DefinePlugin({
