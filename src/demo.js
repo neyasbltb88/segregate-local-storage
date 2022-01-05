@@ -1,3 +1,4 @@
+import './demo.css';
 import SegregateStorage from './index';
 window.SegregateStorage = SegregateStorage;
 

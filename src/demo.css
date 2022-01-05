@@ -1,0 +1,32 @@
+body {
+    margin: 0;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.row {
+    display: flex;
+    margin: 16px 0;
+}
+
+.col {
+    flex-grow: 1;
+    border: 1px solid #000;
+    padding: 0 16px;
+}
+
+h4 {
+    text-align: center;
+}
+
+.code {
+    overflow: auto;
+    padding: 16px;
+    border: 1px solid #333;
+    border-radius: 4px;
+    background-color: #dedede;
+}
