@@ -2,7 +2,7 @@
     "name": "segregate-local-storage",
     "version": "1.0.0",
     "description": "",
-    "main": "js/index.js",
+    "main": "dist/index.js",
     "scripts": {
         "dev": "cross-env NODE_ENV=development webpack-dev-server",
         "build": "cross-env NODE_ENV=production webpack",
@@ -10,7 +10,7 @@
         "deploy": "gh-pages -d dist",
         "clear": "rm -r dist/ && rm stats.json"
     },
-    "author": "",
+    "author": "neyasbltb_88@mail.ru",
     "license": "ISC",
     "devDependencies": {
         "@babel/core": "^7.6.3",
