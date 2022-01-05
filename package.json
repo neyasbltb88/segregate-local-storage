@@ -14,7 +14,7 @@
         "publish-patch": "npm version patch && npm run publish",
         "clear": "rm -r dist/ && rm stats.json"
     },
-    "author": "neyasbltb_88@mail.ru",
+    "author": "neyasbltb_88",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/neyasbltb88/segregate-local-storage.git"
