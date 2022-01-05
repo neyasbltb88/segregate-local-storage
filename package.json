@@ -8,6 +8,10 @@
         "build": "cross-env NODE_ENV=production webpack",
         "predeploy": "npm run build",
         "deploy": "gh-pages -d dist",
+        "publish": "npm run deploy && npm publish",
+        "publish-major": "npm version major && npm run publish",
+        "publish-minor": "npm version minor && npm run publish",
+        "publish-patch": "npm version patch && npm run publish",
         "clear": "rm -r dist/ && rm stats.json"
     },
     "author": "neyasbltb_88@mail.ru",
