@@ -1,1 +1,1 @@
-# segregate-storage
+# segregate-local-storage

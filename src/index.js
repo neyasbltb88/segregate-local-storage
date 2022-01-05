@@ -1,7 +1,7 @@
-class SegregateStorage {
+class SegregateLocalStorage {
     test() {
-        console.log('SegregateStorage test');
+        console.log('SegregateLocalStorage test');
     }
 }
 
-export default SegregateStorage;
+export default SegregateLocalStorage;

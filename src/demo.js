@@ -1,6 +1,6 @@
 import './demo.css';
-import SegregateStorage from './index';
-window.SegregateStorage = SegregateStorage;
+import SegregateLocalStorage from './index';
+window.SegregateLocalStorage = SegregateLocalStorage;
 
-let s = new SegregateStorage();
+let s = new SegregateLocalStorage();
 s.test();

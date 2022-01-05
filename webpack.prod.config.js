@@ -18,7 +18,7 @@ let config = {
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: '[name].js',
-        library: 'SegregateStorage',
+        library: 'SegregateLocalStorage',
         libraryTarget: 'umd',
         libraryExport: 'default'
     },
