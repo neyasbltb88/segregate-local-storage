@@ -15,8 +15,14 @@ body {
 
 .col {
     flex-grow: 1;
-    border: 1px solid #000;
+    font-style: 0;
+    width: 50%;
     padding: 0 16px;
+}
+
+.section {
+    margin-bottom: 16px;
+    border-bottom: 1px solid #ccc;
 }
 
 h4 {
@@ -28,5 +34,15 @@ h4 {
     padding: 16px;
     border: 1px solid #333;
     border-radius: 4px;
-    background-color: #dedede;
+    background-color: #eee;
+}
+
+@media screen and (max-width: 1200px) {
+    .row {
+        flex-direction: column;
+    }
+
+    .col {
+        width: auto;
+    }
 }

@@ -10,12 +10,42 @@
         <div class="container">
             <div class="row">
                 <div class="col">
+                    <div class="section creation">
+                        <h4>Создание модуля в хранилище</h4>
+                        <pre class="code creation">
+const initialState = {
+    moduleName: 'TestStorageModule',
+    lastUpdate: '06.01.2022 00:44:45'
+};
+
+let sls = new SegregateLocalStorage('TestStorageModule', initialState);
+                        </pre>
+                    </div>
+
+                    <div class="section lastUpdate">
+                        <button class="btn lastUpdate">Обновить lastUpdate</button>
+                        <pre class="code lastUpdate">sls.set('lastUpdate', new Date());</pre>
+                    </div>
+
+                    <div class="section newProp">
+                        <button class="btn newProp">Добавить новое свойство</button>
+                        <pre class="code newProp">sls.set('newProp', true);</pre>
+                    </div>
+
+                    <div class="section removeNewProp">
+                        <button class="btn removeNewProp">Удалить newProp</button>
+                        <pre class="code removeNewProp">sls.remove('newProp');</pre>
+                    </div>
+
+                    <div class="section clearStorage">
+                        <button class="btn clearStorage">Удалить весь модуль из хранилища</button>
+                        <pre class="code clearStorage">sls.clear();</pre>
+                    </div>
+                </div>
+
+                <div class="col">
                     <h4>Объект в хранилище</h4>
                     <pre class="code storage"></pre>
-                </div>
-                <div class="col">
-                    <h4>Создание модуля в хранилище</h4>
-                    <pre class="code creation"></pre>
                 </div>
             </div>
         </div>
