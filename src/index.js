@@ -4,7 +4,7 @@ let instances = {};
 // Приватный объект для хранения имен деактивированных модулей
 let destroyed = {};
 
-const isObject = (param) => typeof param === 'object' && !Array.isArray(param);
+const isObject = (param) => typeof param === 'object' && param !== null && !Array.isArray(param);
 const prepareStorage = (name, defaultValue, removeOtherValues) => {
     let restored = localStorage.getItem(name);
 
