@@ -1,8 +1,10 @@
+import EventEmitter from './utils/EventEmitter';
+
 // Приватный объект для хранения инстансов, чтобы организовать принцип синглтона
 // при инициализации с одинаковыми именами модулей
-let instances = {};
+const instances = {};
 // Приватный объект для хранения имен деактивированных модулей
-let destroyed = {};
+const destroyed = {};
 
 const isObject = (param) => typeof param === 'object' && param !== null && !Array.isArray(param);
 const prepareStorage = (name, defaultValue, removeOtherValues) => {
@@ -26,8 +28,8 @@ const prepareStorage = (name, defaultValue, removeOtherValues) => {
 
         // Если передан флаг удаления старых значений
         if (removeOtherValues) {
-            let defaultValueKeysSet = new Set(Object.keys(defaultValue));
-            let restoredKeys = Object.keys(restored);
+            const defaultValueKeysSet = new Set(Object.keys(defaultValue));
+            const restoredKeys = Object.keys(restored);
 
             // Удаляем из восстановленных данных те, которых сейчас нет в defaultValue
             // т.е. для случаев, когда раньше данные сохранялись уже,
@@ -61,8 +63,10 @@ const prepareStorage = (name, defaultValue, removeOtherValues) => {
  * @param {Boolean} [removeOtherValues=false] - Если передано true, при инициализации удалит из модуля
  * в localStorage данные под теми ключами, которых сейчас нет в объекте параметра defaultValue.
  */
-class SegregateLocalStorage {
+class SegregateLocalStorage extends EventEmitter {
     constructor(name, defaultValue = {}, removeOtherValues = false) {
+        super();
+
         // Создаваемые с одинаковыми именами хранилища будут синглтонами
         if (instances[name]) return instances[name];
 
@@ -81,11 +85,15 @@ class SegregateLocalStorage {
         if (this.isDestroyed) return;
 
         if (val === undefined) return;
-        let tmp = JSON.parse(localStorage.getItem(this.name));
+        const tmp = JSON.parse(localStorage.getItem(this.name));
         if (!tmp) return this;
 
+        const oldVal = tmp[key];
         tmp[key] = val;
         localStorage.setItem(this.name, JSON.stringify(tmp));
+
+        this.emit('set', { key, val, oldVal });
+        this.emit(key, val);
 
         return this;
     }
@@ -98,10 +106,14 @@ class SegregateLocalStorage {
     get(key) {
         if (this.isDestroyed) return;
 
-        let tmp = JSON.parse(localStorage.getItem(this.name));
+        const tmp = JSON.parse(localStorage.getItem(this.name));
         if (!tmp) return this;
 
-        return tmp[key];
+        const val = tmp[key];
+
+        this.emit('get', { key, val });
+
+        return val;
     }
 
     /**
@@ -111,7 +123,9 @@ class SegregateLocalStorage {
     getAll() {
         if (this.isDestroyed) return;
 
-        let tmp = JSON.parse(localStorage.getItem(this.name));
+        const tmp = JSON.parse(localStorage.getItem(this.name));
+
+        this.emit('getAll', tmp);
 
         return tmp;
     }
@@ -124,11 +138,15 @@ class SegregateLocalStorage {
     remove(key) {
         if (this.isDestroyed) return;
 
-        let tmp = JSON.parse(localStorage.getItem(this.name));
+        const tmp = JSON.parse(localStorage.getItem(this.name));
         if (!tmp) return this;
+
+        const val = tmp[key];
 
         delete tmp[key];
         localStorage.setItem(this.name, JSON.stringify(tmp));
+
+        this.emit('remove', { key, val });
 
         return this;
     }
@@ -142,6 +160,8 @@ class SegregateLocalStorage {
 
         localStorage.removeItem(this.name);
 
+        this.emit('clear');
+
         return this;
     }
 
@@ -153,6 +173,8 @@ class SegregateLocalStorage {
 
         destroyed[this.name] = true;
         delete instances[this.name];
+
+        this.emit('destroy');
     }
 
     /**
@@ -180,6 +202,8 @@ class SegregateLocalStorage {
         this.name = name;
         prepareStorage(name, defaultValue, removeOtherValues);
         instances[name] = this;
+
+        this.emit('init');
 
         return this;
     }

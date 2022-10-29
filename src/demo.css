@@ -26,7 +26,13 @@ body {
 }
 
 h4 {
+    margin-block-start: 0;
+    margin-block-end: 0;
+    padding: 1.33em 0;
     text-align: center;
+    position: sticky;
+    top: 0;
+    background-color: #fff;
 }
 
 .code {
@@ -35,6 +41,32 @@ h4 {
     border: 1px solid #333;
     border-radius: 4px;
     background-color: #eee;
+}
+
+.section.event {
+    border-bottom: none;
+}
+
+.sectionBody {
+    overflow: auto;
+}
+
+.section.event .sectionBody {
+    max-height: 400px;
+}
+
+.eventRow {
+    margin-bottom: 16px;
+    border-bottom: 1px solid #ccc;
+    outline: none;
+}
+
+.m0 {
+    margin: 0;
+}
+
+.label {
+    font-weight: bold;
 }
 
 @media screen and (max-width: 1200px) {
