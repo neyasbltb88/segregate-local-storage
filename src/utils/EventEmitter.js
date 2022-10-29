@@ -110,7 +110,7 @@ class EventEmitter {
      * @param {Function} callback Функция-обработчик всех событий
      * @returns {this} Возвращает инстанс
      */
-    off(callback) {
+    offAll(callback) {
         this.allEvents.delete(callback);
 
         return this;
