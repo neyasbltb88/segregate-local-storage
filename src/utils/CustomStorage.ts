@@ -9,6 +9,8 @@ class CustomStorage {
     clear() {
         console.log('CustomStorage clear');
 
+        localStorage.clear();
+
         return this.storage.clear();
     }
 
@@ -27,11 +29,16 @@ class CustomStorage {
     removeItem(key: string) {
         console.log('CustomStorage removeItem:', key);
 
+        localStorage.removeItem(key);
+
         return this.storage.delete(key);
     }
 
     setItem(key: string, value: string) {
         console.log('CustomStorage setItem:', { key, value });
+
+        localStorage.setItem(key, value);
+
         return this.storage.set(key, value);
     }
 
