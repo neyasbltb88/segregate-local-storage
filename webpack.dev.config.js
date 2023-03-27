@@ -13,7 +13,7 @@ let config = {
     context: path.resolve(__dirname, 'src'),
 
     entry: {
-        index: './index.js',
+        index: './index.ts',
         demo: './demo.js'
     },
 
@@ -65,6 +65,11 @@ let config = {
     module: {
         rules: [
             {
+                test: /\.tsx?$/,
+                use: 'ts-loader',
+                exclude: /node_modules/
+            },
+            {
                 test: /\.js$/,
                 exclude: /node_modules/,
                 use: {
@@ -113,7 +118,7 @@ let config = {
     },
 
     resolve: {
-        extensions: ['index.js', '.js', '.css', '*']
+        extensions: ['index.js', '.js', '.ts', '.css', '*']
     }
 };
 
