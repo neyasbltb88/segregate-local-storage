@@ -2,13 +2,14 @@ import EventEmitter from './utils/EventEmitter';
 
 // Приватный объект для хранения инстансов, чтобы организовать принцип синглтона
 // при инициализации с одинаковыми именами модулей
-const instances = {};
+const instances: Record<string, SegregateLocalStorage> = {};
 // Приватный объект для хранения имен деактивированных модулей
-const destroyed = {};
+const destroyed: Record<string, boolean> = {};
 
-const isObject = (param) => typeof param === 'object' && param !== null && !Array.isArray(param);
-const prepareStorage = (name, defaultValue, removeOtherValues) => {
-    let restored = localStorage.getItem(name);
+const isObject = (param: any): param is Object => typeof param === 'object' && param !== null && !Array.isArray(param);
+
+const prepareStorage = (name: string, defaultValue: Object, removeOtherValues: boolean) => {
+    const restored = localStorage.getItem(name);
 
     // Если под ключом name в localStorage ничего нет,
     // то сохраним под этим ключом полученное значение по умолчанию
@@ -23,13 +24,13 @@ const prepareStorage = (name, defaultValue, removeOtherValues) => {
     // то объединим их на случай, если в defaultValue добавились какие-то поля,
     // которых еще не было в ранее сохраненных данных
     try {
-        restored = JSON.parse(restored);
-        if (!isObject(restored) || !isObject(defaultValue)) return false;
+        const restoredParsed = JSON.parse(restored);
+        if (!restored || !isObject(restored) || !isObject(defaultValue)) return false;
 
         // Если передан флаг удаления старых значений
         if (removeOtherValues) {
             const defaultValueKeysSet = new Set(Object.keys(defaultValue));
-            const restoredKeys = Object.keys(restored);
+            const restoredKeys = Object.keys(restoredParsed);
 
             // Удаляем из восстановленных данных те, которых сейчас нет в defaultValue
             // т.е. для случаев, когда раньше данные сохранялись уже,
@@ -37,12 +38,12 @@ const prepareStorage = (name, defaultValue, removeOtherValues) => {
             restoredKeys.forEach((restoredKey) => {
                 if (defaultValueKeysSet.has(restoredKey)) return;
 
-                delete restored[restoredKey];
+                delete restoredParsed[restoredKey];
             });
         }
 
-        restored = { ...defaultValue, ...restored };
-        localStorage.setItem(name, JSON.stringify(restored));
+        const restoredFull = { ...defaultValue, ...restoredParsed };
+        localStorage.setItem(name, JSON.stringify(restoredFull));
 
         return true;
     } catch (error) {}
@@ -64,7 +65,9 @@ const prepareStorage = (name, defaultValue, removeOtherValues) => {
  * в localStorage данные под теми ключами, которых сейчас нет в объекте параметра defaultValue.
  */
 class SegregateLocalStorage extends EventEmitter {
-    constructor(name, defaultValue = {}, removeOtherValues = false) {
+    protected name: string = '';
+
+    constructor(name: string, defaultValue: Object = {}, removeOtherValues: boolean = false) {
         super();
 
         // Создаваемые с одинаковыми именами хранилища будут синглтонами
@@ -77,37 +80,35 @@ class SegregateLocalStorage extends EventEmitter {
 
     /**
      * @description Присваивает ключу key значение val в рамках своего модуля.
-     * @param {String} key - Ключ.
-     * @param {*} val - Значение.
-     * @returns {this} - Возвращает инстанс класса для цепного вызова.
+     * @param {string} key - Ключ.
+     * @param {any} val - Значение.
+     * @returns {T|void} - Возвращает результат присвоения в хранилище.
      */
-    set(key, val) {
+    set<T>(key: string, val: any): T | void {
         if (this.isDestroyed) return;
-
         if (val === undefined) return;
-        const tmp = JSON.parse(localStorage.getItem(this.name));
-        if (!tmp) return this;
+
+        const tmp = JSON.parse(localStorage.getItem(this.name)!);
+        if (!tmp) return;
 
         const oldVal = tmp[key];
         tmp[key] = val;
-        localStorage.setItem(this.name, JSON.stringify(tmp));
+        const res = localStorage.setItem(this.name, JSON.stringify(tmp));
 
         this.emit('set', { key, val, oldVal });
         this.emit(key, val);
-
-        return this;
     }
 
     /**
      * @description Возвращает значение из модуля, сохраненное под ключом из параметра key.
-     * @param {String} key - Ключ в модуле.
-     * @returns {*} - Значение, сохраненное в модуле под ключом из параметра key.
+     * @param {string} key - Ключ в модуле.
+     * @returns {T|undefined} - Значение, сохраненное в модуле под ключом из параметра key.
      */
-    get(key) {
+    get<T>(key: string): T | undefined {
         if (this.isDestroyed) return;
 
-        const tmp = JSON.parse(localStorage.getItem(this.name));
-        if (!tmp) return this;
+        const tmp = JSON.parse(localStorage.getItem(this.name)!);
+        if (!tmp) return;
 
         const val = tmp[key];
 
@@ -118,12 +119,12 @@ class SegregateLocalStorage extends EventEmitter {
 
     /**
      * @description Возвращает свой полный модуль данных.
-     * @returns {Object} - Сохраненный объект модуля.
+     * @returns {T|undefined} - Сохраненный объект модуля.
      */
-    getAll() {
+    getAll<T>(): T | undefined {
         if (this.isDestroyed) return;
 
-        const tmp = JSON.parse(localStorage.getItem(this.name));
+        const tmp = JSON.parse(localStorage.getItem(this.name)!);
 
         this.emit('getAll', tmp);
 
@@ -133,42 +134,39 @@ class SegregateLocalStorage extends EventEmitter {
     /**
      * @description Удаляет из модуля данные под ключом из параметра key.
      * @param {String} key - Ключ, данные которого необходимо удалить.
-     * @returns {this} - Возвращает инстанс класса для цепного вызова.
+     * @returns {T|void} - Возвращает результат удаления из хранилища.
      */
-    remove(key) {
+    remove<T>(key: string): T | void {
         if (this.isDestroyed) return;
 
-        const tmp = JSON.parse(localStorage.getItem(this.name));
-        if (!tmp) return this;
+        const tmp = JSON.parse(localStorage.getItem(this.name)!);
+        if (!tmp) return;
 
         const val = tmp[key];
-
         delete tmp[key];
-        localStorage.setItem(this.name, JSON.stringify(tmp));
+        const res = localStorage.setItem(this.name, JSON.stringify(tmp));
 
         this.emit('remove', { key, val });
 
-        return this;
+        return res;
     }
 
     /**
      * @description Полностью удаляет свой модуль из localStorage.
-     * @returns {this} - Возвращает инстанс класса для цепного вызова.
+     * @returns {T|void} - Возвращает результат очистки хранилища.
      */
-    clear() {
+    clear<T>(): T | void {
         if (this.isDestroyed) return;
-
-        localStorage.removeItem(this.name);
 
         this.emit('clear');
 
-        return this;
+        return localStorage.removeItem(this.name);
     }
 
     /**
      * @description Деактивирует текущий инстанс
      */
-    destroy() {
+    destroy(): void {
         if (this.isDestroyed) return;
 
         destroyed[this.name] = true;
@@ -181,7 +179,7 @@ class SegregateLocalStorage extends EventEmitter {
      * @description Флаг деактивированного состояния инстанса
      * @readonly
      */
-    get isDestroyed() {
+    get isDestroyed(): boolean {
         return !!destroyed[this.name];
     }
 
@@ -196,7 +194,7 @@ class SegregateLocalStorage extends EventEmitter {
      * @param {Boolean} [removeOtherValues=false] - Если передано true, при инициализации удалит из модуля
      * в localStorage данные под теми ключами, которых сейчас нет в объекте параметра defaultValue.
      */
-    init(name, defaultValue, removeOtherValues) {
+    init(name: string, defaultValue: object, removeOtherValues: boolean): this {
         delete destroyed[name];
 
         this.name = name;
