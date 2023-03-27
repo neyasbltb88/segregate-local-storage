@@ -1,14 +1,16 @@
+export type TEvents = { [key: string]: Set<Function> };
+
 /**
  * @class
  * @classdesc Класс, реализующий логику работы с подпиской на события и их генерацию
  * с уведомлением всех функций-обработчиков соответствующего события
  */
 class EventEmitter {
-    allEvents = new Set();
-    events = {};
-    onceCallbacks = {};
-    eventsPrefix;
-    autoPrefix;
+    protected allEvents = new Set<Function>();
+    protected events: TEvents = {};
+    protected onceCallbacks: TEvents = {};
+    protected eventsPrefix: string;
+    protected autoPrefix: boolean;
 
     /**
      * @class
@@ -17,7 +19,7 @@ class EventEmitter {
      * к именам событий при подписке и отписке от них.
      * При генерации события этот префикс всегда добавляется автоматически
      */
-    constructor(eventsPrefix = '', autoPrefix = false) {
+    constructor(eventsPrefix: string = '', autoPrefix: boolean = false) {
         this.eventsPrefix = eventsPrefix;
         this.autoPrefix = autoPrefix;
     }
@@ -27,7 +29,7 @@ class EventEmitter {
      * @param {string} type Имя события
      * @param {boolean} usePrefix Добавлять ли к имени события префикс, если он есть
      */
-    getEventName(type, usePrefix = this.autoPrefix) {
+    getEventName(type: string, usePrefix: boolean = this.autoPrefix): string {
         return this.eventsPrefix && usePrefix ? `${this.eventsPrefix}:${type}` : type;
     }
 
@@ -37,8 +39,8 @@ class EventEmitter {
      * @param {Function} callback Функция-обработчик событий с именем {type}
      * @returns {this} Возвращает инстанс
      */
-    on(type, callback) {
-        let _type = this.getEventName(type);
+    on(type: string, callback: Function): EventEmitter {
+        let _type: string = this.getEventName(type);
         this.events[_type] = this.events[_type] || new Set();
         this.events[_type].add(callback);
 
@@ -51,8 +53,8 @@ class EventEmitter {
      * @param {Function} callback Функция-обработчик событий с именем {type}
      * @returns {this} Возвращает инстанс
      */
-    off(type, callback) {
-        let _type = this.getEventName(type);
+    off(type: string, callback: Function): EventEmitter {
+        let _type: string = this.getEventName(type);
         if (!this.events[_type]) return this;
 
         this.events[_type].delete(callback);
@@ -67,8 +69,8 @@ class EventEmitter {
      * @param {Function} callback Функция-обработчик событий с именем {type}
      * @returns {this} Возвращает инстанс
      */
-    one(type, callback) {
-        let _type = this.getEventName(type);
+    one(type: string, callback: Function): EventEmitter {
+        let _type: string = this.getEventName(type);
         this.events[_type] = new Set([callback]);
 
         return this;
@@ -82,8 +84,8 @@ class EventEmitter {
      * @param {Function} callback Функция-обработчик событий с именем {type}
      * @returns {this} Возвращает инстанс
      */
-    once(type, callback) {
-        let _type = this.getEventName(type);
+    once(type: string, callback: Function): EventEmitter {
+        let _type: string = this.getEventName(type);
 
         this.events[_type] = this.events[_type] || new Set();
         this.events[_type].add(callback);
@@ -99,7 +101,7 @@ class EventEmitter {
      * @param {Function} callback Функция-обработчик всех событий
      * @returns {this} Возвращает инстанс
      */
-    onAll(callback) {
+    onAll(callback: Function): EventEmitter {
         this.allEvents.add(callback);
 
         return this;
@@ -110,7 +112,7 @@ class EventEmitter {
      * @param {Function} callback Функция-обработчик всех событий
      * @returns {this} Возвращает инстанс
      */
-    offAll(callback) {
+    offAll(callback: Function): EventEmitter {
         this.allEvents.delete(callback);
 
         return this;
@@ -119,16 +121,16 @@ class EventEmitter {
     /**
      * @description Метод генерации событий, запускающий оповещение всех функций-обработчиков события с именем {type}
      * @param {string} type Имя события
-     * @param {Function} callback Функция-обработчик событий с именем {type}
+     * @param {any} [arg] Данные, прикрепляемые к событию.
      * @returns {this} Возвращает инстанс
      */
-    emit(type, arg) {
-        let _type = this.getEventName(type, true);
+    emit(type: string, arg?: any): any {
+        let _type: string = this.getEventName(type, true);
 
-        this.allEvents.forEach((callback) => callback(type, arg));
+        this.allEvents.forEach(callback => callback(type, arg));
 
         if (this.events[_type]) {
-            this.events[_type].forEach((callback) => {
+            this.events[_type].forEach(callback => {
                 callback(arg);
 
                 if (this.onceCallbacks[_type]?.has?.(callback)) {
