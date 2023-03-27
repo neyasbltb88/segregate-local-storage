@@ -2,6 +2,10 @@ import './demo.css';
 import SegregateLocalStorage from './index';
 window.SegregateLocalStorage = SegregateLocalStorage;
 import jsonStringify from './utils/jsonStringify';
+import CustomStorage from './utils/CustomStorage';
+window.CustomStorage = CustomStorage;
+const customStorage = new CustomStorage();
+window.customStorage = customStorage;
 
 const codeStorage = document.querySelector('.code.storage');
 const eventSection = document.querySelector('.section.event .sectionBody');
@@ -56,7 +60,7 @@ const initialState = {
 };
 window.initialState = initialState;
 
-let sls = new SegregateLocalStorage('TestStorageModule', initialState);
+let sls = new SegregateLocalStorage('TestStorageModule', initialState, false, customStorage);
 window.sls = sls;
 
 const updateCodeStorage = () => {
