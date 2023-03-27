@@ -1,4 +1,5 @@
 import EventEmitter from './utils/EventEmitter';
+import CustomStorage from './utils/CustomStorage';
 
 // Приватный объект для хранения инстансов, чтобы организовать принцип синглтона
 // при инициализации с одинаковыми именами модулей
@@ -8,18 +9,23 @@ const destroyed: Record<string, boolean> = {};
 
 const isObject = (param: any): param is Object => typeof param === 'object' && param !== null && !Array.isArray(param);
 
-const prepareStorage = (name: string, defaultValue: Object, removeOtherValues: boolean) => {
-    const restored = localStorage.getItem(name);
+const prepareStorage = (
+    name: string,
+    defaultValue: Object,
+    removeOtherValues: boolean,
+    storage: Storage | CustomStorage = localStorage
+) => {
+    const restored = storage.getItem(name);
 
     // Если под ключом name в localStorage ничего нет,
     // то сохраним под этим ключом полученное значение по умолчанию
-    if (!(name in localStorage) || !restored) {
-        localStorage.setItem(name, JSON.stringify(defaultValue));
+    if (!(name in storage) || !restored) {
+        storage.setItem(name, JSON.stringify(defaultValue));
 
         return true;
     }
 
-    // Если в localStorage уже есть что-то сохраненное под именем name,
+    // Если в storage уже есть что-то сохраненное под именем name,
     // и оно является объектом, и полученное значение по умолчанию тоже объект,
     // то объединим их на случай, если в defaultValue добавились какие-то поля,
     // которых еще не было в ранее сохраненных данных
@@ -43,37 +49,43 @@ const prepareStorage = (name: string, defaultValue: Object, removeOtherValues: b
         }
 
         const restoredFull = { ...defaultValue, ...restoredParsed };
-        localStorage.setItem(name, JSON.stringify(restoredFull));
+        storage.setItem(name, JSON.stringify(restoredFull));
 
         return true;
     } catch (error) {}
 };
 
 /**
- * @class Сохраняет в localStorage изолированные друг от друга модули
+ * @class Сохраняет в Storage изолированные друг от друга модули
  * в виде сериализованных объектов, сохраненных под ключом из параметра name.
  * Позволяет получать, присваивать и добавлять данные в модуль, сам производит сериализацию и парсинг.
  * При создании нескольких экземпляров с одним и тем же именем, повторного создания не произойдет,
  * а будет возвращен один и тот же инстанс.
- * @param {String} name - Имя модуля, под которым данные будут сохраняться в localStorage.
+ * @param {String} name - Имя модуля, под которым данные будут сохраняться в Storage.
  * @param {Object} [defaultValue={}] - Объект начального состояния.
- * При первой инициализации класса этот объект сохранится в localStorage под ключом из параметра name.
+ * При первой инициализации класса этот объект сохранится в Storage под ключом из параметра name.
  * Если при следующих инициализациях в этот объект будут добавлены новые свойства,
- * они так же будут добавлены в модуль в localStorage,
+ * они так же будут добавлены в модуль в Storage,
  * но уже существующие в нем ранее сохраненные данные не будут затронуты.
  * @param {Boolean} [removeOtherValues=false] - Если передано true, при инициализации удалит из модуля
- * в localStorage данные под теми ключами, которых сейчас нет в объекте параметра defaultValue.
+ * в Storage данные под теми ключами, которых сейчас нет в объекте параметра defaultValue.
  */
 class SegregateLocalStorage extends EventEmitter {
     protected name: string = '';
+    protected storage: Storage | CustomStorage;
 
-    constructor(name: string, defaultValue: Object = {}, removeOtherValues: boolean = false) {
+    constructor(
+        name: string,
+        defaultValue: Object = {},
+        removeOtherValues: boolean = false,
+        storage: Storage | CustomStorage = localStorage
+    ) {
         super();
 
         // Создаваемые с одинаковыми именами хранилища будут синглтонами
         if (instances[name]) return instances[name];
 
-        this.init(name, defaultValue, removeOtherValues);
+        this.init(name, defaultValue, removeOtherValues, storage);
 
         return this;
     }
@@ -88,15 +100,17 @@ class SegregateLocalStorage extends EventEmitter {
         if (this.isDestroyed) return;
         if (val === undefined) return;
 
-        const tmp = JSON.parse(localStorage.getItem(this.name)!);
+        const tmp = JSON.parse(this.storage.getItem(this.name)!);
         if (!tmp) return;
 
         const oldVal = tmp[key];
         tmp[key] = val;
-        const res = localStorage.setItem(this.name, JSON.stringify(tmp));
+        const res = <T>this.storage.setItem(this.name, JSON.stringify(tmp));
 
         this.emit('set', { key, val, oldVal });
         this.emit(key, val);
+
+        return res;
     }
 
     /**
@@ -107,7 +121,7 @@ class SegregateLocalStorage extends EventEmitter {
     get<T>(key: string): T | undefined {
         if (this.isDestroyed) return;
 
-        const tmp = JSON.parse(localStorage.getItem(this.name)!);
+        const tmp = JSON.parse(this.storage.getItem(this.name)!);
         if (!tmp) return;
 
         const val = tmp[key];
@@ -124,7 +138,7 @@ class SegregateLocalStorage extends EventEmitter {
     getAll<T>(): T | undefined {
         if (this.isDestroyed) return;
 
-        const tmp = JSON.parse(localStorage.getItem(this.name)!);
+        const tmp = JSON.parse(this.storage.getItem(this.name) ?? '{}');
 
         this.emit('getAll', tmp);
 
@@ -139,12 +153,12 @@ class SegregateLocalStorage extends EventEmitter {
     remove<T>(key: string): T | void {
         if (this.isDestroyed) return;
 
-        const tmp = JSON.parse(localStorage.getItem(this.name)!);
+        const tmp = JSON.parse(this.storage.getItem(this.name)!);
         if (!tmp) return;
 
         const val = tmp[key];
         delete tmp[key];
-        const res = localStorage.setItem(this.name, JSON.stringify(tmp));
+        const res = <T>this.storage.setItem(this.name, JSON.stringify(tmp));
 
         this.emit('remove', { key, val });
 
@@ -152,7 +166,7 @@ class SegregateLocalStorage extends EventEmitter {
     }
 
     /**
-     * @description Полностью удаляет свой модуль из localStorage.
+     * @description Полностью удаляет свой модуль из Storage.
      * @returns {T|void} - Возвращает результат очистки хранилища.
      */
     clear<T>(): T | void {
@@ -160,7 +174,7 @@ class SegregateLocalStorage extends EventEmitter {
 
         this.emit('clear');
 
-        return localStorage.removeItem(this.name);
+        return <T>this.storage.removeItem(this.name);
     }
 
     /**
@@ -185,20 +199,21 @@ class SegregateLocalStorage extends EventEmitter {
 
     /**
      * @description Инициализирует инстанс класса
-     * @param {String} name - Имя модуля, под которым данные будут сохраняться в localStorage.
+     * @param {String} name - Имя модуля, под которым данные будут сохраняться в Storage.
      * @param {Object} [defaultValue={}] - Объект начального состояния.
-     * При первой инициализации класса этот объект сохранится в localStorage под ключом из параметра name.
+     * При первой инициализации класса этот объект сохранится в Storage под ключом из параметра name.
      * Если при следующих инициализациях в этот объект будут добавлены новые свойства,
-     * они так же будут добавлены в модуль в localStorage,
+     * они так же будут добавлены в модуль в Storage,
      * но уже существующие в нем ранее сохраненные данные не будут затронуты.
      * @param {Boolean} [removeOtherValues=false] - Если передано true, при инициализации удалит из модуля
-     * в localStorage данные под теми ключами, которых сейчас нет в объекте параметра defaultValue.
+     * в Storage данные под теми ключами, которых сейчас нет в объекте параметра defaultValue.
      */
-    init(name: string, defaultValue: object, removeOtherValues: boolean): this {
+    init(name: string, defaultValue: object, removeOtherValues: boolean, storage: Storage | CustomStorage): this {
         delete destroyed[name];
 
         this.name = name;
-        prepareStorage(name, defaultValue, removeOtherValues);
+        this.storage = storage;
+        prepareStorage(name, defaultValue, removeOtherValues, storage);
         instances[name] = this;
 
         this.emit('init');
