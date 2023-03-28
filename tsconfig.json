@@ -5,6 +5,8 @@
         "module": "es6",
         "target": "es2015",
         "allowJs": true,
-        "noEmit": false
+        "noEmit": false,
+        "declaration": true,
+        "declarationMap": true
     }
 }
