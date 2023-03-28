@@ -13,7 +13,7 @@ const prepareStorage = (
     name: string,
     defaultValue: Object,
     removeOtherValues: boolean,
-    storage: Storage | CustomStorage = localStorage
+    storage: Storage | CustomStorage
 ) => {
     const restored = storage.getItem(name);
 
@@ -208,7 +208,12 @@ class SegregateLocalStorage extends EventEmitter {
      * @param {Boolean} [removeOtherValues=false] - Если передано true, при инициализации удалит из модуля
      * в Storage данные под теми ключами, которых сейчас нет в объекте параметра defaultValue.
      */
-    init(name: string, defaultValue: object, removeOtherValues: boolean, storage: Storage | CustomStorage): this {
+    init(
+        name: string,
+        defaultValue: Object = {},
+        removeOtherValues: boolean = false,
+        storage: Storage | CustomStorage = localStorage
+    ): this {
         delete destroyed[name];
 
         this.name = name;
