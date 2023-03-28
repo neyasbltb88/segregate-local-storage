@@ -6,12 +6,12 @@
     "scripts": {
         "dev": "cross-env NODE_ENV=development webpack-dev-server",
         "build": "cross-env NODE_ENV=production webpack",
-        "predeploy": "npm run build",
+        "postbuild": "git commit -am build",
         "deploy": "gh-pages -d dist",
         "publish": "npm run deploy && npm publish",
-        "publish-major": "npm version major && npm run publish",
-        "publish-minor": "npm version minor && npm run publish",
-        "publish-patch": "npm version patch && npm run publish",
+        "publish-major": "npm run build && npm version major && npm run publish",
+        "publish-minor": "npm run build && npm version minor && npm run publish",
+        "publish-patch": "npm run build && npm version patch && npm run publish",
         "clear": "rm -r dist/ && rm stats.json"
     },
     "author": "neyasbltb_88",
@@ -19,7 +19,7 @@
         "type": "git",
         "url": "git+https://github.com/neyasbltb88/segregate-local-storage.git"
     },
-    "homepage": "https://github.com/neyasbltb88/segregate-local-storage#readme",
+    "homepage": "https://neyasbltb88.github.io/segregate-local-storage",
     "license": "ISC",
     "devDependencies": {
         "@babel/core": "^7.6.3",
