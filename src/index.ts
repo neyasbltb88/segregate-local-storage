@@ -19,7 +19,7 @@ const prepareStorage = (
 
     // Если под ключом name в localStorage ничего нет,
     // то сохраним под этим ключом полученное значение по умолчанию
-    if (!(name in storage) || !restored) {
+    if (!restored) {
         storage.setItem(name, JSON.stringify(defaultValue));
 
         return true;
